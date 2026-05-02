@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kazakh Phrase Helper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────── -->
+  <header class="header">
+    <div class="header-logo">
+      <span class="logo-kz">Қаз</span>
+      <span class="logo-sep">·</span>
+      <span class="logo-name">Phrase Helper</span>
+    </div>
+    <div class="header-status" id="healthDot" title="Backend status"></div>
+  </header>
+
+  <!-- ── Tab bar ─────────────────────────────────────────────── -->
+  <nav class="tabs">
+    <button class="tab active" data-tab="transcribe">Transcribe</button>
+    <button class="tab" data-tab="saved">
+      Saved
+      <span class="saved-badge" id="savedBadge" style="display:none"></span>
+    </button>
+  </nav>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  TAB: TRANSCRIBE                                          -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="tab-panel active" id="tab-transcribe">
+
+    <!-- Video info card -->
+    <div class="video-card" id="videoCard">
+      <div class="video-card-thumb" id="videoThumb"></div>
+      <div class="video-card-info">
+        <p class="video-card-title" id="videoTitle">Open a YouTube video to begin</p>
+        <p class="video-card-url"  id="videoUrl"></p>
+      </div>
+    </div>
+
+    <!-- Controls row -->
+    <div class="controls-row">
+      <div class="lang-wrap">
+        <label class="lang-label" for="langSelect">Language</label>
+        <select id="langSelect" class="lang-select">
+          <option value="kk" selected>Kazakh (қазақша)</option>
+          <option value="ru">Russian (русский)</option>
+          <option value="auto">Auto-detect</option>
+          <option value="en">English</option>
+          <option value="zh">Chinese</option>
+          <option value="ar">Arabic</option>
+          <option value="de">German</option>
+          <option value="fr">French</option>
+          <option value="es">Spanish</option>
+          <option value="tr">Turkish</option>
+          <option value="uz">Uzbek</option>
+        </select>
+      </div>
+      <button id="transcribeBtn" class="btn btn-primary">
+        <svg class="btn-icon" viewBox="0 0 20 20" fill="none">
+          <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M7 10l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Transcribe Video
+      </button>
+    </div>
+
+    <!-- Status / progress -->
+    <div class="status-box" id="statusBox" style="display:none">
+      <div class="status-spinner"></div>
+      <span id="statusText">Starting…</span>
+    </div>
+
+    <!-- Error box -->
+    <div class="error-box" id="errorBox" style="display:none">
+      <svg viewBox="0 0 20 20" fill="none" class="error-icon">
+        <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M10 6v4M10 13.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span id="errorText"></span>
+    </div>
+
+    <!-- Transcript result -->
+    <div id="transcriptSection" style="display:none">
+      <div class="transcript-header">
+        <span class="transcript-meta" id="transcriptMeta"></span>
+        <button class="btn btn-ghost btn-sm" id="clearTranscriptBtn">Clear</button>
+      </div>
+      <div class="transcript-list" id="transcriptList"></div>
+    </div>
+
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <!--  TAB: SAVED PHRASES                                       -->
+  <!-- ══════════════════════════════════════════════════════════ -->
+  <div class="tab-panel" id="tab-saved" style="display:none">
+
+    <div class="saved-header">
+      <span class="saved-count" id="savedCount">0 phrases saved</span>
+      <button class="btn btn-ghost btn-sm" id="clearAllSavedBtn">Clear all</button>
+    </div>
+
+    <div id="savedEmpty" class="empty-state">
+      <svg viewBox="0 0 48 48" fill="none" class="empty-icon">
+        <rect x="8" y="12" width="32" height="28" rx="3" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M16 20h16M16 26h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M30 8v8M26 10l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <p>No saved phrases yet.</p>
+      <p class="empty-hint">Click the bookmark icon next to any transcript segment.</p>
+    </div>
+
+    <div class="saved-list" id="savedList"></div>
+
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+
+# Backend generated dirs
+backend/temp_audio/
+backend/cache/
+
+# Node / macOS
+node_modules/
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts
+dist/
+build/
+*.zip
+
+
+README.md
