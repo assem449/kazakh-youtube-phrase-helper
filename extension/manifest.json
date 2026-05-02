@@ -4,10 +4,15 @@
   "version": "1.0.0",
   "description": "Transcribe YouTube videos locally and learn Kazakh phrases.",
 
+  "background": {
+    "service_worker": "background.js"
+  },
+
   "permissions": [
     "activeTab",
     "scripting",
-    "storage"
+    "storage",
+    "tabs"
   ],
 
   "host_permissions": [

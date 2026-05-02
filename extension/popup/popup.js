@@ -3,6 +3,20 @@
 
 const API_BASE = "http://localhost:8000";
 
+async function sendToContentScript(message) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab) throw new Error("No active tab");
+
+  // Inject content script programmatically each time (Chrome deduplicates)
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    files: ["content/content.js"],
+  }).catch(() => {});
+
+  await new Promise(r => setTimeout(r, 300));
+  return chrome.tabs.sendMessage(tab.id, message);
+}
+
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const healthDot        = document.getElementById("healthDot");
 const videoThumb       = document.getElementById("videoThumb");
@@ -30,6 +44,26 @@ document.querySelectorAll(".tab").forEach(btn => {
   btn.addEventListener("click", () => switchTab(btn.dataset.tab));
 });
 
+
+let subtitlesVisible = true;
+
+document.getElementById("toggleSubtitlesBtn").addEventListener("click", async () => {
+  if (subtitlesVisible) {
+    await sendToContentScript({ type: "HIDE_SUBTITLES" });
+    document.getElementById("toggleSubtitlesBtn").textContent = "Show Subtitles";
+  } else {
+    const { lastTranscript } = await chrome.storage.local.get("lastTranscript");
+    if (lastTranscript) {
+      await sendToContentScript({
+        type: "SHOW_SUBTITLES",
+        segments: lastTranscript.segments,
+      });
+    }
+    document.getElementById("toggleSubtitlesBtn").textContent = "Hide Subtitles";
+  }
+  subtitlesVisible = !subtitlesVisible;
+});
+
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentVideoInfo = null;
 
@@ -38,17 +72,11 @@ let currentVideoInfo = null;
   checkHealth();
   await loadVideoInfo();
   await refreshSavedBadge();
-})();
-
-(async () => {
-  checkHealth();
-  await loadVideoInfo();
-  await refreshSavedBadge();
   
   // Restore last transcript if popup was closed
   const { lastTranscript } = await chrome.storage.local.get("lastTranscript");
   if (lastTranscript) {
-    renderTranscript(lastTranscript);
+    await renderTranscript(lastTranscript);
   }
 })();
 
@@ -83,15 +111,7 @@ async function checkHealth() {
 // ── Load current video info ───────────────────────────────────────────────────
 async function loadVideoInfo() {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab || !tab.url || !tab.url.includes("youtube.com/watch")) {
-      videoTitle.textContent = "Open a YouTube video to begin";
-      videoUrl.textContent   = "";
-      transcribeBtn.disabled  = true;
-      return;
-    }
-
-    const info = await chrome.tabs.sendMessage(tab.id, { type: "GET_VIDEO_INFO" });
+    const info = await sendToContentScript({ type: "GET_VIDEO_INFO" });
     currentVideoInfo = info;
 
     videoTitle.textContent = info.title || "Unknown title";
@@ -152,7 +172,7 @@ transcribeBtn.addEventListener("click", async () => {
 
     const data = await res.json();
     hideStatus();
-    renderTranscript(data);
+    await renderTranscript(data);
 
   } catch (err) {
     clearInterval(stepInterval);
@@ -169,9 +189,18 @@ transcribeBtn.addEventListener("click", async () => {
 });
 
 // ── Render transcript ─────────────────────────────────────────────────────────
-function renderTranscript(data) {
+async function renderTranscript(data) {
   // Save to storage so it survives popup close
   chrome.storage.local.set({ lastTranscript: data });
+
+  try {
+    await sendToContentScript({
+      type: "SHOW_SUBTITLES",
+      segments: data.segments,
+    });
+  } catch (e) {
+    console.warn("Could not send subtitles to page:", e);
+  }
 
   const { title, segments, language, cached } = data;
 
@@ -254,10 +283,7 @@ function buildSegmentEl(seg, videoTitle, index) {
 // ── Jump to time ──────────────────────────────────────────────────────────────
 async function jumpToTime(seconds) {
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tab) {
-      await chrome.tabs.sendMessage(tab.id, { type: "SEEK_TO", time: seconds });
-    }
+    await sendToContentScript({ type: "SEEK_TO", time: seconds });
   } catch (err) {
     console.warn("Could not seek:", err);
   }
