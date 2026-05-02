@@ -1,0 +1,14 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.0.0
+
+# ── Audio download ────────────────────────────────────────
+yt-dlp>=2024.3.10
+
+# ── Speech-to-text: pick ONE (faster-whisper is recommended) ──
+# Option A — faster, lower memory, runs on CPU well:
+faster-whisper>=1.0.0
+
+# Option B — original OpenAI Whisper (uncomment if faster-whisper fails):
+# openai-whisper>=20231117
+# torch>=2.0.0          # required by openai-whisper
