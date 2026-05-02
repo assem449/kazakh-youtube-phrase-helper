@@ -11,6 +11,14 @@ env/
 backend/temp_audio/
 backend/cache/
 
+# Downloaded/generated media
+*.mp3
+*.mp4
+*.wav
+*.m4a
+*.webm
+*.mov
+
 # Node / macOS
 node_modules/
 .DS_Store

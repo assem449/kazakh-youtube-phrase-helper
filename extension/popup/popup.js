@@ -40,6 +40,18 @@ let currentVideoInfo = null;
   await refreshSavedBadge();
 })();
 
+(async () => {
+  checkHealth();
+  await loadVideoInfo();
+  await refreshSavedBadge();
+  
+  // Restore last transcript if popup was closed
+  const { lastTranscript } = await chrome.storage.local.get("lastTranscript");
+  if (lastTranscript) {
+    renderTranscript(lastTranscript);
+  }
+})();
+
 // ── Tab switching ─────────────────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll(".tab").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
@@ -158,6 +170,9 @@ transcribeBtn.addEventListener("click", async () => {
 
 // ── Render transcript ─────────────────────────────────────────────────────────
 function renderTranscript(data) {
+  // Save to storage so it survives popup close
+  chrome.storage.local.set({ lastTranscript: data });
+
   const { title, segments, language, cached } = data;
 
   transcriptMeta.textContent =
